@@ -12,18 +12,18 @@ z.config({
 export const handleFormValidationError = (error: any, res: Response) => {
   if (error instanceof z.ZodError) {
     res.status(400).json({
-      message: "Invalid field properties",
+      error: "Invalid field properties",
       fieldErrors: error.issues.map((issue) => ({
         [String(issue.path[0])]: issue.message,
       })),
     });
     return;
+  } else {
+    return res.status(500).json({ error: error.message });
   }
 };
 
 export const createUserForm = z.object({
   email: z.email(),
-  name: z.string().optional(),
   password: z.string().min(8).trim().max(32),
-  pfp: z.string().optional(),
 });

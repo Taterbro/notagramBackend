@@ -13,6 +13,7 @@ export const errorHandler = (
     });
     return;
   } else {
+    console.log("le: ", err);
     res.status(500).json({ error: "Something went wrong on our end" });
     return;
   }
