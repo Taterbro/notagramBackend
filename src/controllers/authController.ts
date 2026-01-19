@@ -17,7 +17,9 @@ export async function registerUser(req: Request, res: Response) {
   const newUser = req.body;
 
   try {
-    createUserForm.parse(newUser);
+    createUserForm.parse(newUser, {
+      reportInput: true,
+    });
     //const salt = bcrypt.genSalt(10);
     const userFound = await userExists(newUser.email);
     if (userFound.length > 0) {
