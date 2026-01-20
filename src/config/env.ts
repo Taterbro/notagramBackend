@@ -16,4 +16,9 @@ export const env = {
   mysqlUser: require("MYSQL_USER"),
   mysqlPassword: require("MYSQL_PASSWORD"),
   mysqlDatabaseName: require("MYSQL_DATABASE"),
+
+  redisUsername: require("REDIS_USERNAME"),
+  redisPassword: require("REDIS_PASSWORD"),
+  redisHost: require("REDIS_HOST"),
+  redisPort: Number(require("REDIS_PORT")),
 };
