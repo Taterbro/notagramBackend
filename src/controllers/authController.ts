@@ -42,16 +42,40 @@ export async function registerUser(req: Request, res: Response) {
 
 export async function sendVerificationCode(req: Request, res: Response) {
   try {
+    if (!req.params.email) {
+      return res.status(400).json({ error: "Please enter a valid email" });
+    }
     otpForm.parse(req.body);
-    const userEmail = req.body.email;
-    const userFound = await getUser({ email: userEmail });
+    const userFound = await getUser({ email: String(req.params.email) });
     if (!userFound) {
       return res.status(401).json({ error: "Email address not found." });
     }
+    if (userFound.isVerified) {
+      return res
+        .status(401)
+        .json({ error: "You're already verified, you greedy fuck!" });
+    }
+    const id = String(userFound.id);
     const otpCode = crypto.randomBytes(32).toString("hex");
-    const hashedEmail = await bcrypt.hash(userEmail, 10);
     const hashedOtp = await bcrypt.hash(otpCode, 10);
-    await redisClient.set(hashedEmail, hashedOtp);
+
+    const existingCode = await redisClient.get(id);
+    if (existingCode) {
+      return res
+        .status(401)
+        .json({
+          error: "Please wait ten minutes before making another request",
+        });
+    }
+    await redisClient.set(id, hashedOtp, {
+      expiration: { type: "EX", value: 600 },
+    });
+    const verificationCode = await redisClient.get(id);
+    res.status(200).json({
+      code: verificationCode,
+      message:
+        "this is for testing, future vic. Please just send a success message and send the code to their email, NOT in the response",
+    });
   } catch (error) {
     console.log(error);
     handleFormValidationError(error, res);

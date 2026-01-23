@@ -1,19 +1,20 @@
 import { pool } from "@/config/database.js";
-import { QueryError, RowDataPacket } from "mysql2";
+import { QueryError } from "mysql2";
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { addUser } from "@/types/users.js";
 
 const promisePool = pool.promise();
 export async function createUser(user: addUser) {
   try {
-    const [result, fields] = await promisePool.query(
+    const [result, fields] = await promisePool.query<ResultSetHeader>(
       `INSERT INTO users(email,password) VALUES(?,?)`,
       [user.email, user.password]
     );
-    const payload = await promisePool.query(
+    const payload = await promisePool.query<RowDataPacket[]>(
       "SELECT * FROM users WHERE id = ?",
-      [result.insertId] //idk why ts sees this as an error, the docs says this is how you do this and it works
+      [result.insertId]
     );
-    return payload[0][0]; //same with this. TS complains but the docs say it's correct...?
+    return payload[0][0];
   } catch (err) {
     if (err instanceof Error) {
       console.log("error from createUser fn: ", err.message);

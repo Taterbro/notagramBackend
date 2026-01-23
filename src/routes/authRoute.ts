@@ -1,6 +1,10 @@
 import express from "express";
-import { registerUser } from "@/controllers/authController.js";
+import {
+  registerUser,
+  sendVerificationCode,
+} from "@/controllers/authController.js";
 
 export const auth = express.Router();
 
 auth.post("/register", registerUser);
+auth.get("/get-otp/:email", sendVerificationCode);
