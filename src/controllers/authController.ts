@@ -8,6 +8,7 @@ import {
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { redisClient } from "@/config/caching.js";
+import { generateEmailVerificationEmail, resend } from "@/config/emailApi.js";
 
 export async function registerUser(req: Request, res: Response) {
   if (!req.body) {
@@ -33,7 +34,7 @@ export async function registerUser(req: Request, res: Response) {
 
     return res.status(201).json({
       message: "User registered!",
-      user: response,
+      user: { ...response, password: undefined, createdAt: undefined },
     });
   } catch (error) {
     handleFormValidationError(error, res);
@@ -41,12 +42,14 @@ export async function registerUser(req: Request, res: Response) {
 }
 
 export async function sendVerificationCode(req: Request, res: Response) {
+  const tokenTTL = 600;
   try {
     if (!req.params.email) {
       return res.status(400).json({ error: "Please enter a valid email" });
     }
+    const usersEmail = String(req.params.email);
     otpForm.parse(req.body);
-    const userFound = await getUser({ email: String(req.params.email) });
+    const userFound = await getUser({ email: usersEmail });
     if (!userFound) {
       return res.status(401).json({ error: "Email address not found." });
     }
@@ -59,22 +62,34 @@ export async function sendVerificationCode(req: Request, res: Response) {
     const otpCode = crypto.randomBytes(32).toString("hex");
     const hashedOtp = await bcrypt.hash(otpCode, 10);
 
-    const existingCode = await redisClient.get(id);
-    if (existingCode) {
+    const timerCheck = await redisClient.set(`${id}_queryAgainTimer`, "time", {
+      expiration: { type: "EX", value: 60 },
+      condition: "NX",
+    });
+    if (timerCheck === null) {
       return res
         .status(401)
-        .json({
-          error: "Please wait ten minutes before making another request",
-        });
+        .json({ error: "Please wait a minute before sending requests" });
     }
     await redisClient.set(id, hashedOtp, {
-      expiration: { type: "EX", value: 600 },
+      expiration: { type: "EX", value: tokenTTL },
     });
     const verificationCode = await redisClient.get(id);
+    if (verificationCode === null) {
+      throw new Error(
+        "could not retrieve code for some reason. \nerrorfn: sendVerificationCode"
+      );
+    }
+    const { data, error } = await resend.emails.send({
+      from: "Vic <onboarding@resend.dev>",
+      to: [usersEmail],
+      subject: "Notagram Email Verification",
+      html: generateEmailVerificationEmail(otpCode, String(tokenTTL / 60)),
+    });
     res.status(200).json({
-      code: verificationCode,
-      message:
-        "this is for testing, future vic. Please just send a success message and send the code to their email, NOT in the response",
+      message: `The code has been sent to your email and will expire in ${
+        tokenTTL / 60
+      } minutes.`,
     });
   } catch (error) {
     console.log(error);

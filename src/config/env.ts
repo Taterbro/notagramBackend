@@ -21,4 +21,6 @@ export const env = {
   redisPassword: require("REDIS_PASSWORD"),
   redisHost: require("REDIS_HOST"),
   redisPort: Number(require("REDIS_PORT")),
+
+  resendApiKey: require("RESEND_API_KEY"),
 };
