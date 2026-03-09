@@ -5,3 +5,11 @@ export interface addUser {
   //   isVerified: 1 | 0;
   //pfp: string | null;
 }
+
+export interface tokens {
+  tokenHash: string;
+  expiresAt: Date;
+  createdAt: Date;
+  deviceId: string;
+  userId: number;
+}

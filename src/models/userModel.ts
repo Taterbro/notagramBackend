@@ -1,7 +1,7 @@
 import { pool } from "@/config/database.js";
 import { QueryError } from "mysql2";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { addUser } from "@/types/users.js";
+import { addUser } from "@/types/models.js";
 
 const promisePool = pool.promise();
 export async function createUser(user: addUser) {

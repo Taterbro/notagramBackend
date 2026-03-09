@@ -20,10 +20,6 @@ export function passwordValidator(iss: any) {
   }
 }
 
-export function generateOtpToken() {
-  Math.random() * 999999;
-}
-
 export async function sendOtpToRedis(client: RedisClientType, email: string) {
   try {
     const exists = client.get("");

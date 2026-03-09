@@ -4,11 +4,13 @@ import {
   handleFormValidationError,
   createUserForm,
   otpForm,
+  loginForm,
 } from "@/config/formValidation.js";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { redisClient } from "@/config/caching.js";
 import { generateEmailVerificationEmail, resend } from "@/config/emailApi.js";
+import { createToken } from "@/models/tokenModel.js";
 
 export async function registerUser(req: Request, res: Response) {
   if (!req.body) {
@@ -93,6 +95,56 @@ export async function sendVerificationCode(req: Request, res: Response) {
     });
   } catch (error) {
     console.log(error);
+    handleFormValidationError(error, res);
+  }
+}
+
+export async function loginUser(req: Request, res: Response) {
+  if (!req.body) {
+    res
+      .status(401)
+      .json({ error: "you fucking dumbass, you didn't send anything" });
+    return;
+  }
+  const userBody = req.body;
+
+  try {
+    loginForm.parse(userBody, {
+      reportInput: true,
+    });
+    const userFound = await getUser({ email: userBody.email });
+    if (!userFound) {
+      return res
+        .status(401)
+        .json({ error: "Email does not exist. Please create an account" });
+    }
+    const valid = await bcrypt.compare(userBody.password, userFound.password);
+    if (!valid) {
+      return res
+        .status(401)
+        .json({ error: "Incorrect password. Are you a big bad hacker man?" });
+    }
+
+    const randomString = crypto.randomBytes(40).toString("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(randomString)
+      .digest("hex");
+
+    const response = await createToken({
+      tokenHash: tokenHash,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now()),
+      deviceId: userBody.deviceId,
+      userId: userFound.id,
+    });
+
+    return res.status(200).json({
+      message: "JACK IN!!!",
+      user: userFound,
+      authToken: `${response?.id}|${randomString}`,
+    });
+  } catch (error) {
     handleFormValidationError(error, res);
   }
 }

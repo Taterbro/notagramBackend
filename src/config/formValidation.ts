@@ -43,3 +43,9 @@ export const createUserForm = z.object({
 export const otpForm = z.object({
   email: z.email().max(64),
 });
+
+export const loginForm = z.object({
+  email: z.email().max(64),
+  password: z.string(),
+  deviceId: z.string(),
+});
