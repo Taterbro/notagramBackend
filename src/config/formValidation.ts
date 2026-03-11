@@ -49,3 +49,8 @@ export const loginForm = z.object({
   password: z.string(),
   deviceId: z.string(),
 });
+
+export const verifyOtpForm = z.object({
+  userId: z.int(),
+  code: z.string(),
+});

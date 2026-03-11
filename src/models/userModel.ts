@@ -52,3 +52,22 @@ export async function getUser(args: getUserParams) {
     throw new Error("Something went wrong while trying to verify user details");
   }
 }
+
+export async function verifyUser(userId: number) {
+  try {
+    const user = await getUser({ id: String(userId) });
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+
+    const [results] = await promisePool.query<RowDataPacket[]>(
+      `UPDATE USERS SET isVerified = 1 WHERE id = ?`,
+      [userId]
+    );
+    const response = results.length > 0 ? results[0] : null;
+    return response;
+  } catch (error) {
+    console.log("error from verifyUser fn: ", error);
+    throw new Error("Something went wrong while trying to verify user");
+  }
+}
