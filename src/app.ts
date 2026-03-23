@@ -4,6 +4,7 @@ import { auth } from "./routes/authRoute.js";
 import { errorHandler } from "./config/errorHandler.js";
 import { connectToRedis } from "./config/caching.js";
 import { limiter } from "./middleware/rateLimiter.js";
+import { formValidator } from "./middleware/formValidation.js";
 
 const app = express();
 app.use(morgan("dev"));

@@ -1,6 +1,7 @@
 import { passwordValidator } from "@/utils/helpers.js";
 import { Response } from "express";
 import * as z from "zod";
+import { ZodObject } from "zod";
 
 z.config({
   customError: (iss) => {

@@ -14,19 +14,19 @@ import { generateEmailVerificationEmail, resend } from "@/config/emailApi.js";
 import { createToken, deleteToken, getToken } from "@/models/tokenModel.js";
 
 export async function registerUser(req: Request, res: Response) {
-  if (!req.body) {
-    console.log("nothing fr");
-    res
-      .status(401)
-      .json({ error: "you fucking dumbass, you didn't send anything" });
-    return;
-  }
+  // if (!req.body) {
+  //   console.log("nothing fr");
+  //   res
+  //     .status(401)
+  //     .json({ error: "you fucking dumbass, you didn't send anything" });
+  //   return;
+  // }
   const newUser = req.body;
 
   try {
-    createUserForm.parse(newUser, {
-      reportInput: true,
-    });
+    // createUserForm.parse(newUser, {
+    //   reportInput: true,
+    // });
     //const salt = bcrypt.genSalt(10);
     const userFound = await getUser({ email: newUser.email });
     if (userFound) {
@@ -54,7 +54,6 @@ export async function sendEmailVerificationCode(req: Request, res: Response) {
       return res.status(400).json({ error: "Please enter a valid email" });
     }
     const usersEmail = String(req.params.email);
-    otpForm.parse(req.body);
     const userFound = await getUser({ email: usersEmail });
     if (!userFound) {
       return res.status(401).json({ error: "Email address not found." });
