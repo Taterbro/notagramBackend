@@ -2,6 +2,8 @@ import { pool } from "@/config/database.js";
 import { QueryError } from "mysql2";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { tokens } from "@/types/models.js";
+import crypto from "crypto";
+import { error } from "node:console";
 
 const promisePool = pool.promise();
 export async function createToken(token: tokens) {
@@ -101,5 +103,33 @@ export async function deleteToken({
       console.log("Something went wrong");
       return;
     }
+  }
+}
+
+export async function isTokenValid(fullToken: string) {
+  console.log("full toke is: \n", fullToken);
+  try {
+    const tokenId = fullToken.split("|")[0];
+    const token = fullToken.split("|")[1];
+    if (!token || !tokenId) {
+      throw new Error("Token and/or token ID is missing");
+    }
+    console.log("tokenId: ", tokenId, "\n", "token: ", token);
+    const result = await getToken({ tokenId: tokenId });
+    if (result === null) {
+      return false;
+    }
+    console.log("resultah: ", result);
+    const newHash = crypto.createHash("sha256").update(token).digest("hex");
+    const isValid = result && newHash === result.tokenHash;
+    if (!isValid) {
+      return false;
+    }
+    if (isValid) {
+      return true;
+    }
+  } catch (err) {
+    console.log("error from fn (isTokenValid)\n", err);
+    return false;
   }
 }

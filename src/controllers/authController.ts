@@ -14,20 +14,9 @@ import { generateEmailVerificationEmail, resend } from "@/config/emailApi.js";
 import { createToken, deleteToken, getToken } from "@/models/tokenModel.js";
 
 export async function registerUser(req: Request, res: Response) {
-  // if (!req.body) {
-  //   console.log("nothing fr");
-  //   res
-  //     .status(401)
-  //     .json({ error: "you fucking dumbass, you didn't send anything" });
-  //   return;
-  // }
   const newUser = req.body;
 
   try {
-    // createUserForm.parse(newUser, {
-    //   reportInput: true,
-    // });
-    //const salt = bcrypt.genSalt(10);
     const userFound = await getUser({ email: newUser.email });
     if (userFound) {
       return res.status(401).json({ error: "User already exists" });
@@ -153,7 +142,9 @@ export async function loginUser(req: Request, res: Response) {
       return res.status(401).json({ error: "Incorrect password. Womp Womp" });
     }
     const alreadyLoggedIn = await getToken({ userId: userFound.id });
-    alreadyLoggedIn && deleteToken({ userId: userFound.id });
+    if (alreadyLoggedIn) {
+      await deleteToken({ userId: userFound.id });
+    }
 
     const randomString = crypto.randomBytes(40).toString("hex");
     const tokenHash = crypto
@@ -179,12 +170,18 @@ export async function loginUser(req: Request, res: Response) {
   }
 }
 
-export async function testToken(req: Request, res: Response) {
-  if (!req.body) {
-    res
-      .status(401)
-      .json({ error: "you fucking dumbass, you didn't send anything" });
-    return;
+export async function logoutUser(req: Request, res: Response) {
+  try {
+    if (!req.headers.authorization) {
+      return res.status(401).json({ error: "Unauthorized; no bearer token." });
+    }
+    const tokenId = req.headers.authorization.split(" ")[1]?.split("|")[0];
+    if (!tokenId) {
+      throw new Error("No token ID");
+    }
+    await deleteToken({ tokenId: tokenId });
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    throw err;
   }
-  getToken({ tokenId: req.body.id });
 }

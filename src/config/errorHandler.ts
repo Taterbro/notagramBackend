@@ -6,15 +6,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  if (err instanceof SyntaxError && "body" in err) {
-    res.status(400).json({
-      error: "Invalid Syntax",
-      message: "Please check your request body",
-    });
-    return;
-  } else {
-    console.log("le: ", err);
-    res.status(500).json({ error: "Something went wrong on our end" });
-    return;
-  }
+  console.log("le: ", err);
+  res.status(500).json({ error: "Something went wrong on our end" });
+  return;
 };
