@@ -16,10 +16,10 @@ export const tokenValidator = async (
       throw new Error("no token from auth headers.");
     }
     const valid = await isTokenValid(token);
-    if (valid) {
+    if (valid.valid) {
       next();
     } else {
-      res.status(401).json({ error: "Invalid access token" });
+      res.status(401).json({ error: valid.message });
     }
   } catch (err) {
     console.log("error from middleware (tokenValidator)\n", err);

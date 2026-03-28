@@ -107,7 +107,7 @@ export async function deleteToken({
 }
 
 export async function isTokenValid(fullToken: string) {
-  console.log("full toke is: \n", fullToken);
+  const data = { valid: false, message: "" };
   try {
     const tokenId = fullToken.split("|")[0];
     const token = fullToken.split("|")[1];
@@ -117,19 +117,24 @@ export async function isTokenValid(fullToken: string) {
     console.log("tokenId: ", tokenId, "\n", "token: ", token);
     const result = await getToken({ tokenId: tokenId });
     if (result === null) {
-      return false;
+      data.message = "Token does not exist";
+      return data;
     }
-    console.log("resultah: ", result);
+    if (result && result.expiresAt > new Date()) {
+      data.message = "Token expired, please login again to continue.";
+      return data;
+    }
     const newHash = crypto.createHash("sha256").update(token).digest("hex");
     const isValid = result && newHash === result.tokenHash;
     if (!isValid) {
-      return false;
+      data.message = "Invalid token";
+    } else if (isValid) {
+      data.message = "Token successfully validated";
+      data.valid = true;
     }
-    if (isValid) {
-      return true;
-    }
+    return data;
   } catch (err) {
     console.log("error from fn (isTokenValid)\n", err);
-    return false;
+    return data;
   }
 }
