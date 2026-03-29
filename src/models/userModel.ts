@@ -71,3 +71,25 @@ export async function verifyUser(userId: number) {
     throw new Error("Something went wrong while trying to verify user");
   }
 }
+
+export async function isUserVerified(userId: string) {
+  const data = { verified: false, message: "" };
+
+  try {
+    const userFound = await getUser({ id: userId });
+    if (!userFound) {
+      data.message = "User not found";
+      return data;
+    }
+
+    if (userFound.isVerified) {
+      data.verified = true;
+    } else if (!userFound.isVerified) {
+      data.message = "Account not verified";
+    }
+    return data;
+  } catch (err) {
+    console.log("error from isUserVerified fn: ", err);
+    return data;
+  }
+}

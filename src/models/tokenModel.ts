@@ -120,7 +120,7 @@ export async function isTokenValid(fullToken: string) {
       data.message = "Token does not exist";
       return data;
     }
-    if (result && result.expiresAt > new Date()) {
+    if (result && result.expiresAt < new Date()) {
       data.message = "Token expired, please login again to continue.";
       return data;
     }
