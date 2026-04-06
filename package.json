@@ -11,10 +11,12 @@
   "author": "jooom",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
+    "googleapis": "^105.0.0",
     "morgan": "^1.10.1",
     "mysql2": "^3.16.0",
     "redis": "^5.10.0",

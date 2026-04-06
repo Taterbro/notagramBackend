@@ -3,6 +3,8 @@
   "compilerOptions": {
     // File Layout
     //"rootDir": "./src",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "outDir": "./dist",
     "paths": {

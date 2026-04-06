@@ -93,3 +93,25 @@ export async function isUserVerified(userId: string) {
     return data;
   }
 }
+
+export async function editUser(user: addUser) {
+  try {
+    const [result, fields] = await promisePool.query<ResultSetHeader>(
+      `INSERT INTO users(email,password) VALUES(?,?)`,
+      [user.email, user.password]
+    );
+    const payload = await promisePool.query<RowDataPacket[]>(
+      "SELECT * FROM users WHERE id = ?",
+      [result.insertId]
+    );
+    return payload[0][0];
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log("error from createUser fn: ", err.message);
+      throw new Error("Something went wrong while trying to register user");
+    } else {
+      console.log("Something went wrong");
+      return;
+    }
+  }
+}
