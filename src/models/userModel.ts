@@ -94,6 +94,48 @@ export async function isUserVerified(userId: string) {
   }
 }
 
+export async function setUserRefreshToken(userId: number, token: string) {
+  try {
+    const user = await getUser({ id: String(userId) });
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+
+    const [results] = await promisePool.query<RowDataPacket[]>(
+      `UPDATE USERS SET driveRefreshToken = ? WHERE id = ?`,
+      [token, userId]
+    );
+    const response = results.length > 0 ? results[0] : null;
+    return response;
+  } catch (error) {
+    console.log("error from setUserRefreshToken fn: ", error);
+    throw new Error(
+      "Something went wrong while trying to update drive refresh token"
+    );
+  }
+}
+
+export async function setUserDriveStatus(userId: number, status: 0 | 1) {
+  try {
+    const user = await getUser({ id: String(userId) });
+    if (!user) {
+      throw new Error("User does not exist");
+    }
+
+    const [results] = await promisePool.query<RowDataPacket[]>(
+      `UPDATE USERS SET isDriveActive = ? WHERE id = ?`,
+      [status, userId]
+    );
+    const response = results.length > 0 ? results[0] : null;
+    return response;
+  } catch (error) {
+    console.log("error from setUserDriveStatus fn: ", error);
+    throw new Error(
+      "Something went wrong while trying to update drive status."
+    );
+  }
+}
+
 export async function editUser(
   userId: number,
   user: Omit<Partial<addUser>, "password" | "isDriveActive" | "isVerified">

@@ -1,13 +1,13 @@
 import express from "express";
 import {
   connectDriveAccount,
+  getAuthTokens,
   getTokens,
-  testing,
 } from "@/controllers/driveController.js";
 import { tokenValidator } from "@/middleware/tokenValidator.js";
 
 export const connectDrive = express.Router();
 
 connectDrive.post("/base/:userId", tokenValidator, connectDriveAccount);
-connectDrive.get("/token", getTokens);
-connectDrive.get("/test", testing);
+connectDrive.get("/auth-tokens", getAuthTokens);
+connectDrive.get("/get-tokens", getTokens);
