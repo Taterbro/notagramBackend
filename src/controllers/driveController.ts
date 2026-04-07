@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { SCOPES, oauth2Client } from "@/config/googleDrive/driveConfig.js";
 import crypto from "crypto";
-import { getUser } from "@/models/userModel.js";
+import { editUser, getUser } from "@/models/userModel.js";
 import { redisClient } from "@/config/caching.js";
 import { handleFormValidationError } from "@/config/formValidation.js";
 
@@ -55,4 +55,17 @@ export async function getTokens(req: Request, res: Response) {
   }
   console.log("the request's queries: ", queries);
   res.send();
+}
+
+export async function testing(req: Request, res: Response) {
+  try {
+    const yes = await editUser(1, {
+      name: "whooptidoo",
+      pfp: "WAHOOO!!!",
+    });
+    console.log("yes: ", yes);
+    return res.send(yes);
+  } catch (error) {
+    return res.send(error);
+  }
 }

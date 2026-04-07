@@ -94,21 +94,48 @@ export async function isUserVerified(userId: string) {
   }
 }
 
-export async function editUser(user: addUser) {
+export async function editUser(
+  userId: number,
+  user: Omit<Partial<addUser>, "password" | "isDriveActive" | "isVerified">
+) {
   try {
-    const [result, fields] = await promisePool.query<ResultSetHeader>(
-      `INSERT INTO users(email,password) VALUES(?,?)`,
-      [user.email, user.password]
+    const allowedFields: (keyof addUser)[] = ["name", "pfp"];
+
+    const filteredUser = Object.fromEntries(
+      Object.entries(user).filter(([key]) =>
+        allowedFields.includes(key as keyof addUser)
+      )
     );
-    const payload = await promisePool.query<RowDataPacket[]>(
-      "SELECT * FROM users WHERE id = ?",
-      [result.insertId]
+    let leString = "";
+    const values = Object.values(filteredUser);
+    const genCommands = () => {
+      (Object.keys(filteredUser) as (keyof addUser)[]).forEach((key) => {
+        if (
+          key === "password" ||
+          key === "isDriveActive" ||
+          key === "isVerified"
+        ) {
+          leString.concat("");
+        } else {
+          leString = leString.concat(`${key} = ?, `);
+        }
+      });
+      leString = leString.slice(0, -2) + "";
+      console.log("le String: ", leString);
+      return `UPDATE users SET ${leString} WHERE id = ?`;
+    };
+    const commands = genCommands();
+    const allValues = [...values, userId];
+    const payload = await promisePool.execute<RowDataPacket[]>(
+      commands,
+      allValues
     );
-    return payload[0][0];
+    const response = payload.length > 0 ? payload[0] : null;
+    return response;
   } catch (err) {
     if (err instanceof Error) {
-      console.log("error from createUser fn: ", err.message);
-      throw new Error("Something went wrong while trying to register user");
+      console.log("error from editUser fn: ", err);
+      throw new Error("Something went wrong while trying to edit user");
     } else {
       console.log("Something went wrong");
       return;
